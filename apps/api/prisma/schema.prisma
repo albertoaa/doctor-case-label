@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  email        String    @unique
+  password     String
+  name         String
+  role         String
+  doctorCases  Case[]    @relation(name: "caseDoctor")
+  patientCases Case[]    @relation(name: "casePatient")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+}
+
+model Case {
+  id              String     @id @default(auto()) @map("_id") @db.ObjectId
+  patient         User?      @relation(name: "casePatient", fields: [patientId], references: [id])
+  patientId       String?    @db.ObjectId
+  doctor          User?      @relation(name: "caseDoctor", fields: [doctorId], references: [id])
+  doctorId        String?    @db.ObjectId
+  caseDescription String
+  caseCondition   Condition? @relation(fields: [caseConditionId], references: [id])
+  caseConditionId String?    @db.ObjectId
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  deletedAt       DateTime?  @map("deleted_at")
+}
+
+model Condition {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  code        String
+  description String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  Case        Case[]
+}
